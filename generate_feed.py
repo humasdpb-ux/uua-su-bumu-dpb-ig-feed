@@ -80,8 +80,39 @@ def run_gallery_dl(username):
     return combined
 
 
-def parse_gallery_output(stdout):
+def collect_gallery_items(obj):
     items = []
+
+    if isinstance(obj, list):
+        if len(obj) >= 2 and obj[0] == 2 and isinstance(obj[1], dict):
+            items.append(obj[1])
+        else:
+            for child in obj:
+                items.extend(collect_gallery_items(child))
+
+    elif isinstance(obj, dict):
+        for value in obj.values():
+            items.extend(collect_gallery_items(value))
+
+    return items
+
+
+def parse_gallery_output(stdout):
+    stdout = stdout.strip()
+
+    if not stdout:
+        return []
+
+    items = []
+
+    try:
+        parsed = json.loads(stdout)
+        items.extend(collect_gallery_items(parsed))
+    except json.JSONDecodeError:
+        pass
+
+    if items:
+        return items
 
     for line in stdout.splitlines():
         line = line.strip()
@@ -91,16 +122,9 @@ def parse_gallery_output(stdout):
 
         try:
             parsed = json.loads(line)
+            items.extend(collect_gallery_items(parsed))
         except json.JSONDecodeError:
             continue
-
-        if (
-            isinstance(parsed, list)
-            and len(parsed) >= 2
-            and parsed[0] == 2
-            and isinstance(parsed[1], dict)
-        ):
-            items.append(parsed[1])
 
     return items
 
@@ -119,6 +143,8 @@ def extract_shortcode(data):
     shortcode = get_first_string(
         data,
         [
+            "post_shortcode",
+            "sidecar_shortcode",
             "shortcode",
             "short_code",
             "code",
@@ -128,11 +154,6 @@ def extract_shortcode(data):
 
     if shortcode:
         return shortcode
-
-    post_id = str(data.get("post_id") or data.get("id") or "")
-
-    if post_id and "_" in post_id:
-        return post_id.split("_")[0]
 
     return ""
 
@@ -151,9 +172,8 @@ def extract_post_url(data, shortcode):
     if url:
         return url
 
-    typename = str(data.get("__typename", "")).lower()
-    media_type = str(data.get("type") or data.get("typename") or "").lower()
-    is_reel = "reel" in typename or "reel" in media_type or bool(data.get("is_reel"))
+    media_type = str(data.get("type") or data.get("subcategory") or "").lower()
+    is_reel = "reel" in media_type
 
     if shortcode and is_reel:
         return f"https://www.instagram.com/reel/{shortcode}/"
@@ -181,11 +201,22 @@ def extract_image_url(data):
     if image.startswith("http"):
         return image
 
+    # fallback untuk struktur image_versions2 jika ada
+    image_versions = data.get("image_versions2")
+    if isinstance(image_versions, dict):
+        candidates = image_versions.get("candidates")
+        if isinstance(candidates, list) and candidates:
+            first = candidates[0]
+            if isinstance(first, dict):
+                url = first.get("url")
+                if isinstance(url, str) and url.startswith("http"):
+                    return url
+
     return ""
 
 
 def extract_caption(data):
-    caption = get_first_string(
+    return get_first_string(
         data,
         [
             "description",
@@ -194,21 +225,18 @@ def extract_caption(data):
         ],
     )
 
-    return caption
-
 
 def extract_date(data):
-    date = get_first_string(
+    return get_first_string(
         data,
         [
             "date",
+            "post_date",
             "datetime",
             "timestamp",
             "taken_at_timestamp",
         ],
     )
-
-    return date
 
 
 def normalize_item(data, username):
@@ -218,12 +246,13 @@ def normalize_item(data, username):
     caption = extract_caption(data)
     date = extract_date(data)
 
-    is_reel = "/reel/" in post_url
+    is_reel = "/reel/" in post_url or str(data.get("subcategory", "")).lower() == "reels"
     is_video = bool(
         data.get("is_video")
         or data.get("video_url")
         or data.get("duration")
         or data.get("video")
+        or data.get("video_versions")
     )
 
     return {
@@ -263,12 +292,14 @@ def process_account(username):
             return account_result
 
         raw_items = parse_gallery_output(result.stdout)
+        print(f"Raw items found {username}: {len(raw_items)}")
+
         seen_keys = set()
 
         for data in raw_items:
             item = normalize_item(data, username)
 
-            unique_key = item["url"] or item["image_url"] or item["shortcode"]
+            unique_key = item["url"] or item["shortcode"] or item["image_url"]
 
             if not unique_key:
                 continue
@@ -277,10 +308,6 @@ def process_account(username):
                 continue
 
             seen_keys.add(unique_key)
-
-            if not item["image_url"]:
-                continue
-
             account_result["posts"].append(item)
 
             if len(account_result["posts"]) >= POST_LIMIT:
