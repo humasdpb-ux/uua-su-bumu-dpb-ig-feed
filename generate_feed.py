@@ -29,6 +29,8 @@ def run_gallery_dl(username):
 
     command = [
         "gallery-dl",
+        "--config",
+        "gallery-dl.conf",
         "--dump-json",
         "--range",
         f"1-{POST_LIMIT}",
@@ -43,7 +45,7 @@ def run_gallery_dl(username):
         command,
         capture_output=True,
         text=True,
-        timeout=180,
+        timeout=240,
     )
 
     return result
