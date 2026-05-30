@@ -104,27 +104,23 @@ def parse_gallery_output(stdout):
         return []
 
     items = []
+    decoder = json.JSONDecoder()
+    index = 0
+    length = len(stdout)
 
-    try:
-        parsed = json.loads(stdout)
-        items.extend(collect_gallery_items(parsed))
-    except json.JSONDecodeError:
-        pass
+    while index < length:
+        while index < length and stdout[index].isspace():
+            index += 1
 
-    if items:
-        return items
-
-    for line in stdout.splitlines():
-        line = line.strip()
-
-        if not line:
-            continue
+        if index >= length:
+            break
 
         try:
-            parsed = json.loads(line)
+            parsed, next_index = decoder.raw_decode(stdout, index)
             items.extend(collect_gallery_items(parsed))
+            index = next_index
         except json.JSONDecodeError:
-            continue
+            index += 1
 
     return items
 
@@ -201,7 +197,6 @@ def extract_image_url(data):
     if image.startswith("http"):
         return image
 
-    # fallback untuk struktur image_versions2 jika ada
     image_versions = data.get("image_versions2")
     if isinstance(image_versions, dict):
         candidates = image_versions.get("candidates")
