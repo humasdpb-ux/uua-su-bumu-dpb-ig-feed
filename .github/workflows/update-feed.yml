@@ -1,7 +1,6 @@
 name: Update Instagram Feed
 
 on:
-  schedule:
 schedule:
   - cron: "*/30 * * * *"
   workflow_dispatch:
