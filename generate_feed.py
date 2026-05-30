@@ -80,35 +80,8 @@ def run_gallery_dl(username):
     return combined
 
 
-def collect_dicts(obj):
-    found = []
-
-    if isinstance(obj, dict):
-        found.append(obj)
-        for value in obj.values():
-            found.extend(collect_dicts(value))
-
-    elif isinstance(obj, list):
-        for item in obj:
-            found.extend(collect_dicts(item))
-
-    return found
-
-
 def parse_gallery_output(stdout):
-    stdout = stdout.strip()
-
-    if not stdout:
-        return []
-
-    objects = []
-
-    try:
-        parsed = json.loads(stdout)
-        objects.extend(collect_dicts(parsed))
-        return objects
-    except json.JSONDecodeError:
-        pass
+    items = []
 
     for line in stdout.splitlines():
         line = line.strip()
@@ -118,42 +91,69 @@ def parse_gallery_output(stdout):
 
         try:
             parsed = json.loads(line)
-            objects.extend(collect_dicts(parsed))
         except json.JSONDecodeError:
             continue
 
-    return objects
+        if (
+            isinstance(parsed, list)
+            and len(parsed) >= 2
+            and parsed[0] == 2
+            and isinstance(parsed[1], dict)
+        ):
+            items.append(parsed[1])
+
+    return items
+
+
+def get_first_string(data, keys):
+    for key in keys:
+        value = data.get(key)
+
+        if isinstance(value, str) and value.strip():
+            return value.strip()
+
+    return ""
 
 
 def extract_shortcode(data):
-    for key in ["shortcode", "code", "short_code", "id"]:
-        value = data.get(key)
-        if value and isinstance(value, str) and len(value) > 5:
-            return value
+    shortcode = get_first_string(
+        data,
+        [
+            "shortcode",
+            "short_code",
+            "code",
+            "display_id",
+        ],
+    )
 
-    for key in ["post_url", "url", "webpage_url", "permalink", "display_url"]:
-        post_url = data.get(key)
+    if shortcode:
+        return shortcode
 
-        if not isinstance(post_url, str):
-            continue
+    post_id = str(data.get("post_id") or data.get("id") or "")
 
-        if "/p/" in post_url:
-            return post_url.split("/p/")[1].split("/")[0]
-
-        if "/reel/" in post_url:
-            return post_url.split("/reel/")[1].split("/")[0]
+    if post_id and "_" in post_id:
+        return post_id.split("_")[0]
 
     return ""
 
 
 def extract_post_url(data, shortcode):
-    for key in ["post_url", "webpage_url", "permalink"]:
-        value = data.get(key)
-        if isinstance(value, str) and value.startswith("http"):
-            return value
+    url = get_first_string(
+        data,
+        [
+            "post_url",
+            "webpage_url",
+            "permalink",
+            "link",
+        ],
+    )
+
+    if url:
+        return url
 
     typename = str(data.get("__typename", "")).lower()
-    is_reel = "reel" in typename or data.get("is_reel")
+    media_type = str(data.get("type") or data.get("typename") or "").lower()
+    is_reel = "reel" in typename or "reel" in media_type or bool(data.get("is_reel"))
 
     if shortcode and is_reel:
         return f"https://www.instagram.com/reel/{shortcode}/"
@@ -165,65 +165,50 @@ def extract_post_url(data, shortcode):
 
 
 def extract_image_url(data):
-    for key in [
-        "display_url",
-        "thumbnail_src",
-        "thumbnail",
-        "thumbnail_url",
-        "image",
-        "image_url",
-        "url",
-    ]:
-        value = data.get(key)
+    image = get_first_string(
+        data,
+        [
+            "display_url",
+            "thumbnail_src",
+            "thumbnail",
+            "thumbnail_url",
+            "image",
+            "image_url",
+            "url",
+        ],
+    )
 
-        if isinstance(value, str) and value.startswith("http"):
-            return value
+    if image.startswith("http"):
+        return image
 
     return ""
 
 
 def extract_caption(data):
-    for key in ["description", "caption", "title"]:
-        value = data.get(key)
+    caption = get_first_string(
+        data,
+        [
+            "description",
+            "caption",
+            "title",
+        ],
+    )
 
-        if isinstance(value, str):
-            return value
-
-    value = data.get("edge_media_to_caption")
-
-    if isinstance(value, dict):
-        edges = value.get("edges")
-        if isinstance(edges, list) and edges:
-            node = edges[0].get("node", {})
-            text = node.get("text")
-            if isinstance(text, str):
-                return text
-
-    return ""
+    return caption
 
 
 def extract_date(data):
-    for key in ["date", "timestamp", "datetime", "taken_at_timestamp"]:
-        value = data.get(key)
+    date = get_first_string(
+        data,
+        [
+            "date",
+            "datetime",
+            "timestamp",
+            "taken_at_timestamp",
+        ],
+    )
 
-        if value:
-            return str(value)
-
-    return ""
-
-
-def looks_like_media_item(data):
-    shortcode = extract_shortcode(data)
-    image_url = extract_image_url(data)
-    post_url = extract_post_url(data, shortcode)
-
-    if not shortcode:
-        return False
-
-    if image_url or post_url:
-        return True
-
-    return False
+    return date
 
 
 def normalize_item(data, username):
@@ -277,13 +262,10 @@ def process_account(username):
             print(f"Error {username}: {error_message}")
             return account_result
 
-        objects = parse_gallery_output(result.stdout)
+        raw_items = parse_gallery_output(result.stdout)
         seen_keys = set()
 
-        for data in objects:
-            if not looks_like_media_item(data):
-                continue
-
+        for data in raw_items:
             item = normalize_item(data, username)
 
             unique_key = item["url"] or item["image_url"] or item["shortcode"]
@@ -295,6 +277,10 @@ def process_account(username):
                 continue
 
             seen_keys.add(unique_key)
+
+            if not item["image_url"]:
+                continue
+
             account_result["posts"].append(item)
 
             if len(account_result["posts"]) >= POST_LIMIT:
