@@ -49,13 +49,58 @@ def run_gallery_dl(username):
     return result
 
 
+def collect_dicts(obj):
+    found = []
+
+    if isinstance(obj, dict):
+        found.append(obj)
+        for value in obj.values():
+            found.extend(collect_dicts(value))
+
+    elif isinstance(obj, list):
+        for item in obj:
+            found.extend(collect_dicts(item))
+
+    return found
+
+
+def parse_gallery_output(stdout):
+    stdout = stdout.strip()
+
+    if not stdout:
+        return []
+
+    objects = []
+
+    try:
+        parsed = json.loads(stdout)
+        objects.extend(collect_dicts(parsed))
+        return objects
+    except json.JSONDecodeError:
+        pass
+
+    for line in stdout.splitlines():
+        line = line.strip()
+
+        if not line:
+            continue
+
+        try:
+            parsed = json.loads(line)
+            objects.extend(collect_dicts(parsed))
+        except json.JSONDecodeError:
+            continue
+
+    return objects
+
+
 def extract_shortcode(data):
-    for key in ["shortcode", "code"]:
+    for key in ["shortcode", "code", "short_code"]:
         value = data.get(key)
         if value:
-            return value
+            return str(value)
 
-    for key in ["post_url", "url", "webpage_url", "permalink"]:
+    for key in ["post_url", "url", "webpage_url", "permalink", "display_url"]:
         post_url = data.get(key)
 
         if not isinstance(post_url, str):
@@ -76,6 +121,12 @@ def extract_post_url(data, shortcode):
         if isinstance(value, str) and value.startswith("http"):
             return value
 
+    typename = str(data.get("__typename", "")).lower()
+    is_reel = "reel" in typename or data.get("is_reel")
+
+    if shortcode and is_reel:
+        return f"https://www.instagram.com/reel/{shortcode}/"
+
     if shortcode:
         return f"https://www.instagram.com/p/{shortcode}/"
 
@@ -85,6 +136,7 @@ def extract_post_url(data, shortcode):
 def extract_image_url(data):
     for key in [
         "display_url",
+        "thumbnail_src",
         "thumbnail",
         "thumbnail_url",
         "image",
@@ -100,23 +152,42 @@ def extract_image_url(data):
 
 
 def extract_caption(data):
-    for key in ["description", "caption", "title"]:
+    for key in ["description", "caption", "title", "edge_media_to_caption"]:
         value = data.get(key)
 
         if isinstance(value, str):
             return value
 
+        if isinstance(value, dict):
+            edges = value.get("edges")
+            if isinstance(edges, list) and edges:
+                node = edges[0].get("node", {})
+                text = node.get("text")
+                if isinstance(text, str):
+                    return text
+
     return ""
 
 
 def extract_date(data):
-    for key in ["date", "timestamp", "datetime"]:
+    for key in ["date", "timestamp", "datetime", "taken_at_timestamp"]:
         value = data.get(key)
 
         if value:
             return str(value)
 
     return ""
+
+
+def looks_like_media_item(data):
+    shortcode = extract_shortcode(data)
+    image_url = extract_image_url(data)
+    post_url = extract_post_url(data, shortcode)
+
+    if shortcode and (image_url or post_url):
+        return True
+
+    return False
 
 
 def normalize_item(data, username):
@@ -161,8 +232,8 @@ def process_account(username):
         result = run_gallery_dl(username)
 
         print(f"Return code {username}: {result.returncode}")
-        print(f"STDOUT preview {username}: {result.stdout[:500]}")
-        print(f"STDERR preview {username}: {result.stderr[:500]}")
+        print(f"STDOUT preview {username}: {result.stdout[:1200]}")
+        print(f"STDERR preview {username}: {result.stderr[:1200]}")
 
         if result.returncode != 0:
             error_message = result.stderr.strip() or result.stdout.strip()
@@ -170,21 +241,19 @@ def process_account(username):
             print(f"Error {username}: {error_message}")
             return account_result
 
-        lines = [line for line in result.stdout.splitlines() if line.strip()]
+        objects = parse_gallery_output(result.stdout)
         seen_keys = set()
 
-        for line in lines:
-            try:
-                data = json.loads(line)
-            except json.JSONDecodeError:
+        for data in objects:
+            if not looks_like_media_item(data):
                 continue
 
             item = normalize_item(data, username)
 
-            if not item["url"] and not item["image_url"]:
-                continue
+            unique_key = item["url"] or item["image_url"] or item["shortcode"]
 
-            unique_key = item["url"] or item["image_url"]
+            if not unique_key:
+                continue
 
             if unique_key in seen_keys:
                 continue
