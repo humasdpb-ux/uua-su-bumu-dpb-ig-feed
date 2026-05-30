@@ -24,9 +24,7 @@ def clean_username(username):
     return username
 
 
-def run_gallery_dl(username):
-    url = f"https://www.instagram.com/{username}/"
-
+def run_gallery_dl_url(url):
     command = [
         "gallery-dl",
         "--config",
@@ -49,6 +47,37 @@ def run_gallery_dl(username):
     )
 
     return result
+
+
+def run_gallery_dl(username):
+    urls = [
+        f"https://www.instagram.com/{username}/posts/",
+        f"https://www.instagram.com/{username}/reels/",
+    ]
+
+    combined_stdout = ""
+    combined_stderr = ""
+    return_code = 0
+
+    for url in urls:
+        print(f"Fetching URL: {url}")
+        result = run_gallery_dl_url(url)
+
+        combined_stdout += "\n" + result.stdout
+        combined_stderr += "\n" + result.stderr
+
+        if result.returncode != 0:
+            return_code = result.returncode
+
+    class CombinedResult:
+        pass
+
+    combined = CombinedResult()
+    combined.stdout = combined_stdout
+    combined.stderr = combined_stderr
+    combined.returncode = return_code
+
+    return combined
 
 
 def collect_dicts(obj):
@@ -97,10 +126,10 @@ def parse_gallery_output(stdout):
 
 
 def extract_shortcode(data):
-    for key in ["shortcode", "code", "short_code"]:
+    for key in ["shortcode", "code", "short_code", "id"]:
         value = data.get(key)
-        if value:
-            return str(value)
+        if value and isinstance(value, str) and len(value) > 5:
+            return value
 
     for key in ["post_url", "url", "webpage_url", "permalink", "display_url"]:
         post_url = data.get(key)
@@ -154,19 +183,21 @@ def extract_image_url(data):
 
 
 def extract_caption(data):
-    for key in ["description", "caption", "title", "edge_media_to_caption"]:
+    for key in ["description", "caption", "title"]:
         value = data.get(key)
 
         if isinstance(value, str):
             return value
 
-        if isinstance(value, dict):
-            edges = value.get("edges")
-            if isinstance(edges, list) and edges:
-                node = edges[0].get("node", {})
-                text = node.get("text")
-                if isinstance(text, str):
-                    return text
+    value = data.get("edge_media_to_caption")
+
+    if isinstance(value, dict):
+        edges = value.get("edges")
+        if isinstance(edges, list) and edges:
+            node = edges[0].get("node", {})
+            text = node.get("text")
+            if isinstance(text, str):
+                return text
 
     return ""
 
@@ -186,7 +217,10 @@ def looks_like_media_item(data):
     image_url = extract_image_url(data)
     post_url = extract_post_url(data, shortcode)
 
-    if shortcode and (image_url or post_url):
+    if not shortcode:
+        return False
+
+    if image_url or post_url:
         return True
 
     return False
@@ -234,8 +268,8 @@ def process_account(username):
         result = run_gallery_dl(username)
 
         print(f"Return code {username}: {result.returncode}")
-        print(f"STDOUT preview {username}: {result.stdout[:1200]}")
-        print(f"STDERR preview {username}: {result.stderr[:1200]}")
+        print(f"STDOUT preview {username}: {result.stdout[:2000]}")
+        print(f"STDERR preview {username}: {result.stderr[:2000]}")
 
         if result.returncode != 0:
             error_message = result.stderr.strip() or result.stdout.strip()
