@@ -19,6 +19,9 @@ def clean_username(username):
 def main():
     os.makedirs(OUTPUT_DIR, exist_ok=True)
 
+    ig_username = os.getenv("IG_USERNAME")
+    ig_password = os.getenv("IG_PASSWORD")
+
     loader = instaloader.Instaloader(
         download_pictures=False,
         download_videos=False,
@@ -29,6 +32,16 @@ def main():
         compress_json=False,
         quiet=True,
     )
+
+    if ig_username and ig_password:
+        print("Login Instagram menggunakan GitHub Secrets...")
+        try:
+            loader.login(ig_username, ig_password)
+            print("Login berhasil.")
+        except Exception as e:
+            print(f"Login gagal: {e}")
+    else:
+        print("IG_USERNAME atau IG_PASSWORD belum tersedia. Lanjut tanpa login.")
 
     with open(ACCOUNTS_FILE, "r", encoding="utf-8") as file:
         accounts = [clean_username(line) for line in file if line.strip()]
