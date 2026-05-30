@@ -158,9 +158,13 @@ def process_account(username):
     }
 
     try:
-        result = run_gallery_dl(username)
-
-        if result.returncode != 0:
+            result = run_gallery_dl(username)
+            
+            print(f"Return code {username}: {result.returncode}")
+            print(f"STDOUT preview {username}: {result.stdout[:500]}")
+            print(f"STDERR preview {username}: {result.stderr[:500]}")
+            
+            if result.returncode != 0:
             error_message = result.stderr.strip() or result.stdout.strip()
             account_result["error"] = error_message
             print(f"Error {username}: {error_message}")
