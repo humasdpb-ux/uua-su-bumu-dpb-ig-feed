@@ -1,18 +1,27 @@
 import json
 import os
 import subprocess
-from datetime import datetime
+from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 
 ACCOUNTS_FILE = "accounts.txt"
 OUTPUT_DIR = "output"
+
 POST_LIMIT = 3
+REEL_LIMIT = 3
+FETCH_LIMIT = 12
+RECENT_DAYS = 31
+
 TIMEZONE = "Asia/Jakarta"
 
 
 def now_jakarta():
-    return datetime.now(ZoneInfo(TIMEZONE)).isoformat()
+    return datetime.now(ZoneInfo(TIMEZONE))
+
+
+def now_jakarta_iso():
+    return now_jakarta().isoformat()
 
 
 def clean_username(username):
@@ -31,7 +40,7 @@ def run_gallery_dl_url(url):
         "gallery-dl.conf",
         "--dump-json",
         "--range",
-        f"1-{POST_LIMIT}",
+        f"1-{FETCH_LIMIT}",
     ]
 
     if os.path.exists("cookies.txt"):
@@ -43,7 +52,7 @@ def run_gallery_dl_url(url):
         command,
         capture_output=True,
         text=True,
-        timeout=240,
+        timeout=300,
     )
 
     return result
@@ -84,13 +93,13 @@ def collect_gallery_items(obj):
     items = []
 
     if isinstance(obj, list):
-        # gallery-dl message type 2 = metadata/directory item
+        # gallery-dl message type 2 = metadata item
         if len(obj) >= 2 and obj[0] == 2 and isinstance(obj[1], dict):
             data = obj[1]
             data["_gallery_message_type"] = 2
             items.append(data)
 
-        # gallery-dl message type 3 = actual downloadable media URL
+        # gallery-dl message type 3 = downloadable media URL
         elif len(obj) >= 3 and obj[0] == 3 and isinstance(obj[1], str) and isinstance(obj[2], dict):
             data = obj[2]
             data["_gallery_message_type"] = 3
@@ -147,7 +156,7 @@ def get_first_string(data, keys):
 
 
 def extract_shortcode(data):
-    shortcode = get_first_string(
+    return get_first_string(
         data,
         [
             "post_shortcode",
@@ -158,11 +167,6 @@ def extract_shortcode(data):
             "display_id",
         ],
     )
-
-    if shortcode:
-        return shortcode
-
-    return ""
 
 
 def extract_post_url(data, shortcode):
@@ -246,6 +250,41 @@ def extract_date(data):
     )
 
 
+def parse_date(date_text):
+    if not date_text:
+        return None
+
+    formats = [
+        "%Y-%m-%d %H:%M:%S",
+        "%Y-%m-%dT%H:%M:%S",
+        "%Y-%m-%d",
+    ]
+
+    for fmt in formats:
+        try:
+            dt = datetime.strptime(date_text[:19], fmt)
+            return dt.replace(tzinfo=ZoneInfo(TIMEZONE))
+        except ValueError:
+            continue
+
+    try:
+        timestamp = int(float(date_text))
+        return datetime.fromtimestamp(timestamp, ZoneInfo(TIMEZONE))
+    except Exception:
+        return None
+
+
+def is_recent(date_text):
+    dt = parse_date(date_text)
+
+    if not dt:
+        return False
+
+    cutoff = now_jakarta() - timedelta(days=RECENT_DAYS)
+
+    return dt >= cutoff
+
+
 def normalize_item(data, username):
     shortcode = extract_shortcode(data)
     post_url = extract_post_url(data, shortcode)
@@ -253,13 +292,22 @@ def normalize_item(data, username):
     caption = extract_caption(data)
     date = extract_date(data)
 
-    is_reel = "/reel/" in post_url or str(data.get("subcategory", "")).lower() == "reels"
+    subcategory = str(data.get("subcategory", "")).lower()
+    media_type = str(data.get("type", "")).lower()
+
+    is_reel = (
+        "/reel/" in post_url
+        or subcategory == "reels"
+        or "reel" in media_type
+    )
+
     is_video = bool(
         data.get("is_video")
         or data.get("video_url")
         or data.get("duration")
         or data.get("video")
         or data.get("video_versions")
+        or is_reel
     )
 
     return {
@@ -281,11 +329,7 @@ def merge_items_by_post(raw_items, username):
     for data in raw_items:
         item = normalize_item(data, username)
 
-        shortcode = item["shortcode"]
-        post_url = item["url"]
-        image_url = item["image_url"]
-
-        key = shortcode or post_url or image_url
+        key = item.get("shortcode") or item.get("url") or item.get("image_url")
 
         if not key:
             continue
@@ -294,7 +338,6 @@ def merge_items_by_post(raw_items, username):
             merged[key] = item
             continue
 
-        # Lengkapi data yang masih kosong
         for field in ["url", "caption", "caption_short", "date", "image_url", "shortcode"]:
             if not merged[key].get(field) and item.get(field):
                 merged[key][field] = item[field]
@@ -306,11 +349,21 @@ def merge_items_by_post(raw_items, username):
 
     for item in merged.values():
         if not item.get("url") and item.get("shortcode"):
-            item["url"] = f"https://www.instagram.com/p/{item['shortcode']}/"
+            if item.get("is_reel"):
+                item["url"] = f"https://www.instagram.com/reel/{item['shortcode']}/"
+            else:
+                item["url"] = f"https://www.instagram.com/p/{item['shortcode']}/"
 
         results.append(item)
 
     return results
+
+
+def sort_key(item):
+    dt = parse_date(item.get("date", ""))
+    if not dt:
+        return datetime(1970, 1, 1, tzinfo=ZoneInfo(TIMEZONE))
+    return dt
 
 
 def process_account(username):
@@ -318,7 +371,7 @@ def process_account(username):
 
     account_result = {
         "username": username,
-        "generated_at": now_jakarta(),
+        "generated_at": now_jakarta_iso(),
         "posts": [],
         "error": None,
     }
@@ -327,8 +380,7 @@ def process_account(username):
         result = run_gallery_dl(username)
 
         print(f"Return code {username}: {result.returncode}")
-        print(f"STDOUT preview {username}: {result.stdout[:2500]}")
-        print(f"STDERR preview {username}: {result.stderr[:2000]}")
+        print(f"STDERR preview {username}: {result.stderr[:1200]}")
 
         if result.returncode != 0:
             error_message = result.stderr.strip() or result.stdout.strip()
@@ -341,22 +393,36 @@ def process_account(username):
 
         merged_items = merge_items_by_post(raw_items, username)
 
-        seen_keys = set()
-
+        recent_items = []
         for item in merged_items:
-            unique_key = item.get("url") or item.get("shortcode") or item.get("image_url")
-
-            if not unique_key:
+            if not item.get("url"):
                 continue
 
-            if unique_key in seen_keys:
+            if not item.get("image_url"):
                 continue
 
-            seen_keys.add(unique_key)
-            account_result["posts"].append(item)
+            if not item.get("date"):
+                continue
 
-            if len(account_result["posts"]) >= POST_LIMIT:
-                break
+            # buang pinned post lama otomatis
+            if not is_recent(item.get("date")):
+                continue
+
+            recent_items.append(item)
+
+        recent_items.sort(key=sort_key, reverse=True)
+
+        posts = [item for item in recent_items if not item.get("is_reel")]
+        reels = [item for item in recent_items if item.get("is_reel")]
+
+        selected_items = posts[:POST_LIMIT] + reels[:REEL_LIMIT]
+        selected_items.sort(key=sort_key, reverse=True)
+
+        account_result["posts"] = selected_items
+
+        print(f"Recent posts selected {username}: {len(posts[:POST_LIMIT])}")
+        print(f"Recent reels selected {username}: {len(reels[:REEL_LIMIT])}")
+        print(f"Total selected {username}: {len(selected_items)}")
 
     except Exception as e:
         account_result["error"] = str(e)
@@ -372,7 +438,10 @@ def main():
         accounts = [clean_username(line) for line in file if line.strip()]
 
     index_data = {
-        "generated_at": now_jakarta(),
+        "generated_at": now_jakarta_iso(),
+        "recent_days": RECENT_DAYS,
+        "post_limit": POST_LIMIT,
+        "reel_limit": REEL_LIMIT,
         "total_accounts": len(accounts),
         "accounts": [],
     }
