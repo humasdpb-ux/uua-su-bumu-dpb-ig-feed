@@ -5,3 +5,6 @@ klinik.unpadsingaperbangsa
 klinik.unpaddago
 rshunpad
 labsentral.unpad
+shopup.unpad
+unpadpress
+bigunpad
