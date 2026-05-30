@@ -1,1 +1,1 @@
-instaloader
+gallery-dl
