@@ -93,13 +93,11 @@ def collect_gallery_items(obj):
     items = []
 
     if isinstance(obj, list):
-        # gallery-dl message type 2 = metadata item
         if len(obj) >= 2 and obj[0] == 2 and isinstance(obj[1], dict):
             data = obj[1]
             data["_gallery_message_type"] = 2
             items.append(data)
 
-        # gallery-dl message type 3 = downloadable media URL
         elif len(obj) >= 3 and obj[0] == 3 and isinstance(obj[1], str) and isinstance(obj[2], dict):
             data = obj[2]
             data["_gallery_message_type"] = 3
@@ -404,7 +402,6 @@ def process_account(username):
             if not item.get("date"):
                 continue
 
-            # buang pinned post lama otomatis
             if not is_recent(item.get("date")):
                 continue
 
@@ -436,6 +433,8 @@ def main():
 
     with open(ACCOUNTS_FILE, "r", encoding="utf-8") as file:
         accounts = [clean_username(line) for line in file if line.strip()]
+
+    accounts = list(dict.fromkeys(accounts))
 
     index_data = {
         "generated_at": now_jakarta_iso(),
