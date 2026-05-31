@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-05-31T05:43:32.275698+07:00",
+  "generated_at": "2026-05-31T07:04:46.723612+07:00",
   "recent_days": 31,
   "post_limit": 3,
   "reel_limit": 3,
-  "total_accounts": 37,
+  "total_accounts": 36,
   "accounts": [
     {
       "username": "rsunpad",
@@ -219,12 +219,6 @@
       "username": "pip.unpad",
       "file": "pip.unpad.json",
       "post_count": 6,
-      "error": null
-    },
-    {
-      "username": "unpad.edex",
-      "file": "unpad.edex.json",
-      "post_count": 1,
       "error": null
     }
   ]
