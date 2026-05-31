@@ -386,11 +386,9 @@ def process_account(username):
         merged_items = merge_items_by_post(raw_items, username)
 
         recent_items = []
+
         for item in merged_items:
             if not item.get("url"):
-                continue
-
-            if not item.get("image_url"):
                 continue
 
             if not item.get("date"):
@@ -399,6 +397,9 @@ def process_account(username):
             if not is_recent(item.get("date")):
                 continue
 
+            # Catatan:
+            # image_url tidak lagi wajib.
+            # Jadi REELS/VIDEO tetap masuk walaupun thumbnail kosong.
             recent_items.append(item)
 
         recent_items.sort(key=sort_key, reverse=True)
