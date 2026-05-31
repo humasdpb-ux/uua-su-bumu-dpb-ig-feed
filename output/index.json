@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-01T02:58:37.936923+07:00",
+  "generated_at": "2026-06-01T06:45:17.672803+07:00",
   "recent_days": 31,
   "post_limit": 3,
   "reel_limit": 3,
@@ -9,43 +9,43 @@
     {
       "username": "rsunpad",
       "file": "rsunpad.json",
-      "post_count": 3,
+      "post_count": 0,
       "error": null
     },
     {
       "username": "rsgmunpad_official",
       "file": "rsgmunpad_official.json",
-      "post_count": 1,
+      "post_count": 0,
       "error": null
     },
     {
       "username": "klinik.unpad",
       "file": "klinik.unpad.json",
-      "post_count": 4,
+      "post_count": 0,
       "error": null
     },
     {
       "username": "klinik.unpadsingaperbangsa",
       "file": "klinik.unpadsingaperbangsa.json",
-      "post_count": 5,
+      "post_count": 0,
       "error": null
     },
     {
       "username": "klinik.unpaddago",
       "file": "klinik.unpaddago.json",
-      "post_count": 3,
+      "post_count": 0,
       "error": null
     },
     {
       "username": "rshunpad",
       "file": "rshunpad.json",
-      "post_count": 6,
+      "post_count": 0,
       "error": null
     },
     {
       "username": "labsentral.unpad",
       "file": "labsentral.unpad.json",
-      "post_count": 4,
+      "post_count": 0,
       "error": null
     },
     {
@@ -63,7 +63,7 @@
     {
       "username": "bigunpad",
       "file": "bigunpad.json",
-      "post_count": 4,
+      "post_count": 0,
       "error": null
     },
     {
@@ -75,7 +75,7 @@
     {
       "username": "taxcenterunpad",
       "file": "taxcenterunpad.json",
-      "post_count": 6,
+      "post_count": 0,
       "error": null
     },
     {
@@ -87,25 +87,25 @@
     {
       "username": "unpadpusatbahasa",
       "file": "unpadpusatbahasa.json",
-      "post_count": 3,
+      "post_count": 0,
       "error": null
     },
     {
       "username": "bipaunpad",
       "file": "bipaunpad.json",
-      "post_count": 4,
+      "post_count": 0,
       "error": null
     },
     {
       "username": "biomedik.fkunpad",
       "file": "biomedik.fkunpad.json",
-      "post_count": 1,
+      "post_count": 0,
       "error": null
     },
     {
       "username": "pamitran.unpad",
       "file": "pamitran.unpad.json",
-      "post_count": 1,
+      "post_count": 0,
       "error": null
     },
     {
@@ -123,7 +123,7 @@
     {
       "username": "imcarepuspa",
       "file": "imcarepuspa.json",
-      "post_count": 1,
+      "post_count": 0,
       "error": null
     },
     {
@@ -135,7 +135,7 @@
     {
       "username": "mipacornerunpad",
       "file": "mipacornerunpad.json",
-      "post_count": 2,
+      "post_count": 0,
       "error": null
     },
     {
@@ -147,13 +147,13 @@
     {
       "username": "bale_tatanen_unpad",
       "file": "bale_tatanen_unpad.json",
-      "post_count": 1,
+      "post_count": 0,
       "error": null
     },
     {
       "username": "labktnt.unpad",
       "file": "labktnt.unpad.json",
-      "post_count": 1,
+      "post_count": 0,
       "error": null
     },
     {
@@ -177,13 +177,13 @@
     {
       "username": "fikommerce",
       "file": "fikommerce.json",
-      "post_count": 4,
+      "post_count": 0,
       "error": null
     },
     {
       "username": "mahatmasagi.unpad",
       "file": "mahatmasagi.unpad.json",
-      "post_count": 3,
+      "post_count": 0,
       "error": null
     },
     {
@@ -201,7 +201,7 @@
     {
       "username": "utcdagohotelbandung",
       "file": "utcdagohotelbandung.json",
-      "post_count": 4,
+      "post_count": 0,
       "error": null
     },
     {
@@ -213,13 +213,13 @@
     {
       "username": "mahatmacoffeebymmu",
       "file": "mahatmacoffeebymmu.json",
-      "post_count": 4,
+      "post_count": 0,
       "error": null
     },
     {
       "username": "pip.unpad",
       "file": "pip.unpad.json",
-      "post_count": 6,
+      "post_count": 0,
       "error": null
     }
   ]
