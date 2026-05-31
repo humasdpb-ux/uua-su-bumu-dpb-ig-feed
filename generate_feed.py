@@ -10,7 +10,7 @@ OUTPUT_DIR = "output"
 
 POST_LIMIT = 3
 REEL_LIMIT = 3
-FETCH_LIMIT = 12
+FETCH_LIMIT = 8
 RECENT_DAYS = 31
 
 TIMEZONE = "Asia/Jakarta"
@@ -52,7 +52,7 @@ def run_gallery_dl_url(url):
         command,
         capture_output=True,
         text=True,
-        timeout=300,
+        timeout=240,
     )
 
     return result
@@ -69,7 +69,7 @@ def run_gallery_dl(username):
     return_code = 0
 
     for url in urls:
-        print(f"Fetching URL: {url}")
+        print(f"Fetching {url}")
         result = run_gallery_dl_url(url)
 
         combined_stdout += "\n" + result.stdout
@@ -279,7 +279,6 @@ def is_recent(date_text):
         return False
 
     cutoff = now_jakarta() - timedelta(days=RECENT_DAYS)
-
     return dt >= cutoff
 
 
@@ -377,18 +376,13 @@ def process_account(username):
     try:
         result = run_gallery_dl(username)
 
-        print(f"Return code {username}: {result.returncode}")
-        print(f"STDERR preview {username}: {result.stderr[:1200]}")
-
         if result.returncode != 0:
             error_message = result.stderr.strip() or result.stdout.strip()
-            account_result["error"] = error_message
-            print(f"Error {username}: {error_message}")
+            account_result["error"] = error_message[:500]
+            print(f"Error {username}: {account_result['error']}")
             return account_result
 
         raw_items = parse_gallery_output(result.stdout)
-        print(f"Raw items found {username}: {len(raw_items)}")
-
         merged_items = merge_items_by_post(raw_items, username)
 
         recent_items = []
@@ -417,13 +411,15 @@ def process_account(username):
 
         account_result["posts"] = selected_items
 
-        print(f"Recent posts selected {username}: {len(posts[:POST_LIMIT])}")
-        print(f"Recent reels selected {username}: {len(reels[:REEL_LIMIT])}")
-        print(f"Total selected {username}: {len(selected_items)}")
+        print(
+            f"{username}: raw={len(raw_items)}, recent={len(recent_items)}, "
+            f"posts={len(posts[:POST_LIMIT])}, reels={len(reels[:REEL_LIMIT])}, "
+            f"selected={len(selected_items)}"
+        )
 
     except Exception as e:
-        account_result["error"] = str(e)
-        print(f"Error {username}: {e}")
+        account_result["error"] = str(e)[:500]
+        print(f"Error {username}: {account_result['error']}")
 
     return account_result
 
@@ -441,6 +437,7 @@ def main():
         "recent_days": RECENT_DAYS,
         "post_limit": POST_LIMIT,
         "reel_limit": REEL_LIMIT,
+        "fetch_limit": FETCH_LIMIT,
         "total_accounts": len(accounts),
         "accounts": [],
     }
