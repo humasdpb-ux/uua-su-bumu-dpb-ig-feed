@@ -1,7 +1,7 @@
 import json
 import os
 import subprocess
-from datetime import datetime, timedelta
+from datetime import datetime
 from zoneinfo import ZoneInfo
 
 
@@ -10,7 +10,7 @@ OUTPUT_DIR = "output"
 
 POST_LIMIT = 1
 REEL_LIMIT = 1
-FETCH_LIMIT = 5
+FETCH_LIMIT = 20
 RECENT_DAYS = 1
 
 TIMEZONE = "Asia/Jakarta"
@@ -67,6 +67,7 @@ def run_gallery_dl_url(url):
         result.returncode = 124
         return result
 
+
 def run_gallery_dl(username):
     urls = [
         f"https://www.instagram.com/{username}/posts/",
@@ -81,8 +82,8 @@ def run_gallery_dl(username):
         print(f"Fetching {url}", flush=True)
         result = run_gallery_dl_url(url)
 
-        combined_stdout += "\n" + result.stdout
-        combined_stderr += "\n" + result.stderr
+        combined_stdout += "\n" + (result.stdout or "")
+        combined_stderr += "\n" + (result.stderr or "")
 
         if result.returncode != 0:
             return_code = result.returncode
@@ -102,11 +103,13 @@ def collect_gallery_items(obj):
     items = []
 
     if isinstance(obj, list):
+        # gallery-dl message type 2 = metadata item
         if len(obj) >= 2 and obj[0] == 2 and isinstance(obj[1], dict):
             data = obj[1]
             data["_gallery_message_type"] = 2
             items.append(data)
 
+        # gallery-dl message type 3 = downloadable media URL
         elif len(obj) >= 3 and obj[0] == 3 and isinstance(obj[1], str) and isinstance(obj[2], dict):
             data = obj[2]
             data["_gallery_message_type"] = 3
@@ -269,7 +272,7 @@ def parse_date(date_text):
 
     for fmt in formats:
         try:
-            dt = datetime.strptime(date_text[:19], fmt)
+            dt = datetime.strptime(str(date_text)[:19], fmt)
             return dt.replace(tzinfo=ZoneInfo(TIMEZONE))
         except ValueError:
             continue
@@ -287,7 +290,9 @@ def is_recent(date_text):
     if not dt:
         return False
 
+    # Filter hari ini saja, mulai pukul 00:00 WIB
     today_start = now_jakarta().replace(hour=0, minute=0, second=0, microsecond=0)
+
     return dt >= today_start
 
 
@@ -385,10 +390,12 @@ def process_account(username):
     try:
         result = run_gallery_dl(username)
 
-        if result.returncode != 0:
-            error_message = result.stderr.strip() or result.stdout.strip()
+        # Jangan langsung return error jika salah satu URL timeout.
+        # Tetap proses stdout yang berhasil dari URL lainnya.
+        if result.returncode != 0 and not result.stdout.strip():
+            error_message = result.stderr.strip() or "gallery-dl gagal tanpa output."
             account_result["error"] = error_message[:500]
-            print(f"Error {username}: {account_result['error']}")
+            print(f"Error {username}: {account_result['error']}", flush=True)
             return account_result
 
         raw_items = parse_gallery_output(result.stdout)
@@ -406,9 +413,8 @@ def process_account(username):
             if not is_recent(item.get("date")):
                 continue
 
-            # Catatan:
-            # image_url tidak lagi wajib.
-            # Jadi REELS/VIDEO tetap masuk walaupun thumbnail kosong.
+            # image_url tidak wajib.
+            # Jadi video/reels tetap masuk meskipun thumbnail kosong.
             recent_items.append(item)
 
         recent_items.sort(key=sort_key, reverse=True)
@@ -422,14 +428,15 @@ def process_account(username):
         account_result["posts"] = selected_items
 
         print(
-            f"{username}: raw={len(raw_items)}, recent={len(recent_items)}, "
-            f"posts={len(posts[:POST_LIMIT])}, reels={len(reels[:REEL_LIMIT])}, "
-            f"selected={len(selected_items)}"
+            f"{username}: raw={len(raw_items)}, merged={len(merged_items)}, "
+            f"recent={len(recent_items)}, posts={len(posts[:POST_LIMIT])}, "
+            f"reels={len(reels[:REEL_LIMIT])}, selected={len(selected_items)}",
+            flush=True
         )
 
     except Exception as e:
         account_result["error"] = str(e)[:500]
-        print(f"Error {username}: {account_result['error']}")
+        print(f"Error {username}: {account_result['error']}", flush=True)
 
     return account_result
 
@@ -440,11 +447,13 @@ def main():
     with open(ACCOUNTS_FILE, "r", encoding="utf-8") as file:
         accounts = [clean_username(line) for line in file if line.strip()]
 
+    # Hapus duplikat sambil menjaga urutan
     accounts = list(dict.fromkeys(accounts))
 
     index_data = {
         "generated_at": now_jakarta_iso(),
         "recent_days": RECENT_DAYS,
+        "filter_mode": "today_since_00_00_wib",
         "post_limit": POST_LIMIT,
         "reel_limit": REEL_LIMIT,
         "fetch_limit": FETCH_LIMIT,
@@ -474,7 +483,7 @@ def main():
     with open(index_path, "w", encoding="utf-8") as file:
         json.dump(index_data, file, ensure_ascii=False, indent=2)
 
-    print("Done.")
+    print("Done.", flush=True)
 
 
 if __name__ == "__main__":
