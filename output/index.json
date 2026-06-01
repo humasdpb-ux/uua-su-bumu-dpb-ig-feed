@@ -1,8 +1,8 @@
 {
   "generated_at": "2026-06-01T06:45:17.672803+07:00",
-  "recent_days": 31,
-  "post_limit": 3,
-  "reel_limit": 3,
+  "recent_days": 1,
+  "post_limit": 1,
+  "reel_limit": 1,
   "fetch_limit": 8,
   "total_accounts": 36,
   "accounts": [
