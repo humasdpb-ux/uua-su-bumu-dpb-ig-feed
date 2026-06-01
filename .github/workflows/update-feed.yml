@@ -36,7 +36,8 @@ jobs:
           fi
 
       - name: Generate feed Instagram
-        run: python generate_feed.py
+        timeout-minutes: 10
+        run: python -u generate_feed.py
 
       - name: Simpan hasil feed
         uses: stefanzweifel/git-auto-commit-action@v5
