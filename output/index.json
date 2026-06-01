@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-06-01T06:45:17.672803+07:00",
+  "generated_at": "2026-06-01T13:10:12.862896+07:00",
   "recent_days": 1,
   "post_limit": 1,
   "reel_limit": 1,
-  "fetch_limit": 8,
-  "total_accounts": 36,
+  "fetch_limit": 5,
+  "total_accounts": 30,
   "accounts": [
     {
       "username": "rsunpad",
@@ -49,26 +49,8 @@
       "error": null
     },
     {
-      "username": "shopup.unpad",
-      "file": "shopup.unpad.json",
-      "post_count": 0,
-      "error": null
-    },
-    {
-      "username": "unpadpress",
-      "file": "unpadpress.json",
-      "post_count": 0,
-      "error": null
-    },
-    {
       "username": "bigunpad",
       "file": "bigunpad.json",
-      "post_count": 0,
-      "error": null
-    },
-    {
-      "username": "unpad.edex",
-      "file": "unpad.edex.json",
       "post_count": 0,
       "error": null
     },
@@ -139,12 +121,6 @@
       "error": null
     },
     {
-      "username": "uuafpikunpad",
-      "file": "uuafpikunpad.json",
-      "post_count": 0,
-      "error": null
-    },
-    {
       "username": "bale_tatanen_unpad",
       "file": "bale_tatanen_unpad.json",
       "post_count": 0,
@@ -153,24 +129,6 @@
     {
       "username": "labktnt.unpad",
       "file": "labktnt.unpad.json",
-      "post_count": 0,
-      "error": null
-    },
-    {
-      "username": "studiopsiunpad",
-      "file": "studiopsiunpad.json",
-      "post_count": 0,
-      "error": null
-    },
-    {
-      "username": "pari_trend",
-      "file": "pari_trend.json",
-      "post_count": 0,
-      "error": null
-    },
-    {
-      "username": "vokasicorner_unpad",
-      "file": "vokasicorner_unpad.json",
       "post_count": 0,
       "error": null
     },
@@ -219,6 +177,12 @@
     {
       "username": "pip.unpad",
       "file": "pip.unpad.json",
+      "post_count": 0,
+      "error": null
+    },
+    {
+      "username": "unpad.edex",
+      "file": "unpad.edex.json",
       "post_count": 0,
       "error": null
     }
