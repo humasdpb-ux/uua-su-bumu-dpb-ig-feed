@@ -287,8 +287,8 @@ def is_recent(date_text):
     if not dt:
         return False
 
-    cutoff = now_jakarta() - timedelta(days=RECENT_DAYS)
-    return dt >= cutoff
+    today_start = now_jakarta().replace(hour=0, minute=0, second=0, microsecond=0)
+    return dt >= today_start
 
 
 def normalize_item(data, username):
