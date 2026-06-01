@@ -1,7 +1,7 @@
 import json
 import os
 import subprocess
-from datetime import datetime
+from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 
@@ -11,7 +11,7 @@ OUTPUT_DIR = "output"
 POST_LIMIT = 1
 REEL_LIMIT = 1
 FETCH_LIMIT = 20
-RECENT_DAYS = 1
+RECENT_DAYS = 2
 
 TIMEZONE = "Asia/Jakarta"
 
@@ -103,13 +103,11 @@ def collect_gallery_items(obj):
     items = []
 
     if isinstance(obj, list):
-        # gallery-dl message type 2 = metadata item
         if len(obj) >= 2 and obj[0] == 2 and isinstance(obj[1], dict):
             data = obj[1]
             data["_gallery_message_type"] = 2
             items.append(data)
 
-        # gallery-dl message type 3 = downloadable media URL
         elif len(obj) >= 3 and obj[0] == 3 and isinstance(obj[1], str) and isinstance(obj[2], dict):
             data = obj[2]
             data["_gallery_message_type"] = 3
@@ -290,10 +288,9 @@ def is_recent(date_text):
     if not dt:
         return False
 
-    # Filter hari ini saja, mulai pukul 00:00 WIB
-    today_start = now_jakarta().replace(hour=0, minute=0, second=0, microsecond=0)
+    cutoff = now_jakarta() - timedelta(days=RECENT_DAYS)
 
-    return dt >= today_start
+    return dt >= cutoff
 
 
 def normalize_item(data, username):
@@ -390,8 +387,6 @@ def process_account(username):
     try:
         result = run_gallery_dl(username)
 
-        # Jangan langsung return error jika salah satu URL timeout.
-        # Tetap proses stdout yang berhasil dari URL lainnya.
         if result.returncode != 0 and not result.stdout.strip():
             error_message = result.stderr.strip() or "gallery-dl gagal tanpa output."
             account_result["error"] = error_message[:500]
@@ -447,13 +442,12 @@ def main():
     with open(ACCOUNTS_FILE, "r", encoding="utf-8") as file:
         accounts = [clean_username(line) for line in file if line.strip()]
 
-    # Hapus duplikat sambil menjaga urutan
     accounts = list(dict.fromkeys(accounts))
 
     index_data = {
         "generated_at": now_jakarta_iso(),
         "recent_days": RECENT_DAYS,
-        "filter_mode": "today_since_00_00_wib",
+        "filter_mode": "last_48_hours",
         "post_limit": POST_LIMIT,
         "reel_limit": REEL_LIMIT,
         "fetch_limit": FETCH_LIMIT,
