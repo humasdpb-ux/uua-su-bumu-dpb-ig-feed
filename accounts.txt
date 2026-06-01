@@ -5,10 +5,7 @@ klinik.unpadsingaperbangsa
 klinik.unpaddago
 rshunpad
 labsentral.unpad
-shopup.unpad
-unpadpress
 bigunpad
-unpad.edex
 taxcenterunpad
 lrtf_unpad
 unpadpusatbahasa
@@ -20,12 +17,8 @@ puspaunpad
 imcarepuspa
 labfmipaunpad
 mipacornerunpad
-uuafpikunpad
 bale_tatanen_unpad
 labktnt.unpad
-studiopsiunpad
-pari_trend
-vokasicorner_unpad
 fikommerce
 mahatmasagi.unpad
 interedu.mmunpad
