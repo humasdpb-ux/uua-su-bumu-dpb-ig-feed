@@ -3,6 +3,7 @@ rsgmunpad_official
 klinik.unpad
 klinik.unpadsingaperbangsa
 klinik.unpaddago
+apotek.unpad
 rshunpad
 labsentral.unpad
 bigunpad
@@ -16,10 +17,8 @@ p4kgbfkgunpad
 puspaunpad
 imcarepuspa
 labfmipaunpad
-mipacornerunpad
 bale_tatanen_unpad
 labktnt.unpad
-fikommerce
 mahatmasagi.unpad
 interedu.mmunpad
 mmu.eventtourorganizer
