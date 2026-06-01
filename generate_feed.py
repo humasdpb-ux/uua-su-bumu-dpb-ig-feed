@@ -8,10 +8,10 @@ from zoneinfo import ZoneInfo
 ACCOUNTS_FILE = "accounts.txt"
 OUTPUT_DIR = "output"
 
-POST_LIMIT = 3
-REEL_LIMIT = 3
+POST_LIMIT = 1
+REEL_LIMIT = 1
 FETCH_LIMIT = 8
-RECENT_DAYS = 31
+RECENT_DAYS = 1
 
 TIMEZONE = "Asia/Jakarta"
 
