@@ -10,7 +10,7 @@ OUTPUT_DIR = "output"
 
 POST_LIMIT = 1
 REEL_LIMIT = 1
-FETCH_LIMIT = 8
+FETCH_LIMIT = 5
 RECENT_DAYS = 1
 
 TIMEZONE = "Asia/Jakarta"
@@ -48,15 +48,24 @@ def run_gallery_dl_url(url):
 
     command.append(url)
 
-    result = subprocess.run(
-        command,
-        capture_output=True,
-        text=True,
-        timeout=240,
-    )
+    try:
+        result = subprocess.run(
+            command,
+            capture_output=True,
+            text=True,
+            timeout=60,
+        )
+        return result
 
-    return result
+    except subprocess.TimeoutExpired:
+        class TimeoutResult:
+            pass
 
+        result = TimeoutResult()
+        result.stdout = ""
+        result.stderr = "Timeout: proses akun terlalu lama, dilewati otomatis."
+        result.returncode = 124
+        return result
 
 def run_gallery_dl(username):
     urls = [
@@ -69,7 +78,7 @@ def run_gallery_dl(username):
     return_code = 0
 
     for url in urls:
-        print(f"Fetching {url}")
+        print(f"Fetching {url}", flush=True)
         result = run_gallery_dl_url(url)
 
         combined_stdout += "\n" + result.stdout
@@ -364,7 +373,7 @@ def sort_key(item):
 
 
 def process_account(username):
-    print(f"Processing {username}...")
+    print(f"Processing {username}...", flush=True)
 
     account_result = {
         "username": username,
