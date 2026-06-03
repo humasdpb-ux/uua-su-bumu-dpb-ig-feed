@@ -1,59 +1,59 @@
 {
-  "generated_at": "2026-06-03T05:14:06.468190+07:00",
-  "recent_days": 2,
-  "filter_mode": "last_48_hours",
+  "generated_at": "2026-06-03T19:50:28.565921+07:00",
+  "recent_days": 7,
+  "filter_mode": "last_7_days",
   "post_limit": 1,
   "reel_limit": 1,
-  "fetch_limit": 20,
+  "fetch_limit": 50,
   "total_accounts": 29,
   "accounts": [
     {
       "username": "rsunpad",
       "file": "rsunpad.json",
-      "post_count": 1,
+      "post_count": 2,
       "error": null
     },
     {
       "username": "rsgmunpad_official",
       "file": "rsgmunpad_official.json",
-      "post_count": 0,
+      "post_count": 1,
       "error": null
     },
     {
       "username": "klinik.unpad",
       "file": "klinik.unpad.json",
       "post_count": 0,
-      "error": null
+      "error": "Tidak ada data terbaca dari Instagram. "
     },
     {
       "username": "klinik.unpadsingaperbangsa",
       "file": "klinik.unpadsingaperbangsa.json",
       "post_count": 0,
-      "error": null
+      "error": "Tidak ada posting terbaru dalam 7 hari terakhir"
     },
     {
       "username": "klinik.unpaddago",
       "file": "klinik.unpaddago.json",
       "post_count": 0,
-      "error": null
+      "error": "Tidak ada posting terbaru dalam 7 hari terakhir"
     },
     {
       "username": "apotek.unpad",
       "file": "apotek.unpad.json",
-      "post_count": 0,
+      "post_count": 1,
       "error": null
     },
     {
       "username": "rshunpad",
       "file": "rshunpad.json",
-      "post_count": 1,
+      "post_count": 2,
       "error": null
     },
     {
       "username": "labsentral.unpad",
       "file": "labsentral.unpad.json",
       "post_count": 0,
-      "error": null
+      "error": "Tidak ada posting terbaru dalam 7 hari terakhir"
     },
     {
       "username": "bigunpad",
@@ -71,7 +71,7 @@
       "username": "lrtf_unpad",
       "file": "lrtf_unpad.json",
       "post_count": 0,
-      "error": null
+      "error": "Tidak ada posting terbaru dalam 7 hari terakhir"
     },
     {
       "username": "unpadpusatbahasa",
@@ -83,13 +83,13 @@
       "username": "bipaunpad",
       "file": "bipaunpad.json",
       "post_count": 0,
-      "error": null
+      "error": "Tidak ada posting terbaru dalam 7 hari terakhir"
     },
     {
       "username": "biomedik.fkunpad",
       "file": "biomedik.fkunpad.json",
       "post_count": 0,
-      "error": null
+      "error": "Tidak ada posting terbaru dalam 7 hari terakhir"
     },
     {
       "username": "pamitran.unpad",
@@ -101,24 +101,24 @@
       "username": "p4kgbfkgunpad",
       "file": "p4kgbfkgunpad.json",
       "post_count": 0,
-      "error": null
+      "error": "Tidak ada posting terbaru dalam 7 hari terakhir"
     },
     {
       "username": "puspaunpad",
       "file": "puspaunpad.json",
       "post_count": 0,
-      "error": null
+      "error": "Tidak ada posting terbaru dalam 7 hari terakhir"
     },
     {
       "username": "imcarepuspa",
       "file": "imcarepuspa.json",
       "post_count": 0,
-      "error": null
+      "error": "Tidak ada posting terbaru dalam 7 hari terakhir"
     },
     {
       "username": "labfmipaunpad",
       "file": "labfmipaunpad.json",
-      "post_count": 0,
+      "post_count": 1,
       "error": null
     },
     {
@@ -131,42 +131,42 @@
       "username": "labktnt.unpad",
       "file": "labktnt.unpad.json",
       "post_count": 0,
-      "error": null
+      "error": "Tidak ada posting terbaru dalam 7 hari terakhir"
     },
     {
       "username": "mahatmasagi.unpad",
       "file": "mahatmasagi.unpad.json",
-      "post_count": 0,
+      "post_count": 1,
       "error": null
     },
     {
       "username": "interedu.mmunpad",
       "file": "interedu.mmunpad.json",
       "post_count": 0,
-      "error": null
+      "error": "Tidak ada posting terbaru dalam 7 hari terakhir"
     },
     {
       "username": "mmu.eventtourorganizer",
       "file": "mmu.eventtourorganizer.json",
       "post_count": 0,
-      "error": null
+      "error": "Tidak ada posting terbaru dalam 7 hari terakhir"
     },
     {
       "username": "utcdagohotelbandung",
       "file": "utcdagohotelbandung.json",
       "post_count": 0,
-      "error": null
+      "error": "Tidak ada posting terbaru dalam 7 hari terakhir"
     },
     {
       "username": "asrama.balewilasa",
       "file": "asrama.balewilasa.json",
       "post_count": 0,
-      "error": null
+      "error": "Tidak ada posting terbaru dalam 7 hari terakhir"
     },
     {
       "username": "mahatmacoffeebymmu",
       "file": "mahatmacoffeebymmu.json",
-      "post_count": 0,
+      "post_count": 1,
       "error": null
     },
     {
@@ -179,7 +179,7 @@
       "username": "unpad.edex",
       "file": "unpad.edex.json",
       "post_count": 0,
-      "error": null
+      "error": "Tidak ada posting terbaru dalam 7 hari terakhir"
     }
   ]
 }
