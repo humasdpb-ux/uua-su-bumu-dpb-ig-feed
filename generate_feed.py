@@ -10,8 +10,12 @@ OUTPUT_DIR = "output"
 
 POST_LIMIT = 1
 REEL_LIMIT = 1
-FETCH_LIMIT = 20
-RECENT_DAYS = 2
+
+# Naikkan supaya scraper mengambil lebih banyak kandidat posting.
+FETCH_LIMIT = 50
+
+# Naikkan supaya akun yang jarang update tidak langsung kosong.
+RECENT_DAYS = 7
 
 TIMEZONE = "Asia/Jakarta"
 
@@ -31,6 +35,19 @@ def clean_username(username):
     username = username.replace("https://instagram.com/", "")
     username = username.strip("/")
     return username
+
+
+def load_previous_result(username):
+    output_path = os.path.join(OUTPUT_DIR, f"{username}.json")
+
+    if not os.path.exists(output_path):
+        return None
+
+    try:
+        with open(output_path, "r", encoding="utf-8") as file:
+            return json.load(file)
+    except Exception:
+        return None
 
 
 def run_gallery_dl_url(url):
@@ -53,7 +70,7 @@ def run_gallery_dl_url(url):
             command,
             capture_output=True,
             text=True,
-            timeout=60,
+            timeout=90,
         )
         return result
 
@@ -69,7 +86,10 @@ def run_gallery_dl_url(url):
 
 
 def run_gallery_dl(username):
+    # Tambahkan URL profil utama sebagai fallback.
+    # Sebagian akun kadang tidak stabil kalau hanya dibaca dari /posts/ dan /reels/.
     urls = [
+        f"https://www.instagram.com/{username}/",
         f"https://www.instagram.com/{username}/posts/",
         f"https://www.instagram.com/{username}/reels/",
     ]
@@ -374,6 +394,19 @@ def sort_key(item):
     return dt
 
 
+def preserve_previous_if_needed(username, account_result, reason):
+    previous = load_previous_result(username)
+
+    if previous and isinstance(previous.get("posts"), list) and previous["posts"]:
+        account_result["posts"] = previous["posts"]
+        account_result["error"] = f"{reason}. Memakai data lama agar website tidak kosong."
+        print(f"{username}: {reason}. Preserved previous posts={len(previous['posts'])}", flush=True)
+        return account_result
+
+    account_result["error"] = reason
+    return account_result
+
+
 def process_account(username):
     print(f"Processing {username}...", flush=True)
 
@@ -389,11 +422,22 @@ def process_account(username):
 
         if result.returncode != 0 and not result.stdout.strip():
             error_message = result.stderr.strip() or "gallery-dl gagal tanpa output."
-            account_result["error"] = error_message[:500]
-            print(f"Error {username}: {account_result['error']}", flush=True)
-            return account_result
+            return preserve_previous_if_needed(
+                username,
+                account_result,
+                f"gallery-dl gagal: {error_message[:300]}"
+            )
 
         raw_items = parse_gallery_output(result.stdout)
+
+        if not raw_items:
+            stderr_message = result.stderr.strip()[:300] if result.stderr else "Tidak ada raw item dari Instagram."
+            return preserve_previous_if_needed(
+                username,
+                account_result,
+                f"Tidak ada data terbaca dari Instagram. {stderr_message}"
+            )
+
         merged_items = merge_items_by_post(raw_items, username)
 
         recent_items = []
@@ -408,8 +452,6 @@ def process_account(username):
             if not is_recent(item.get("date")):
                 continue
 
-            # image_url tidak wajib.
-            # Jadi video/reels tetap masuk meskipun thumbnail kosong.
             recent_items.append(item)
 
         recent_items.sort(key=sort_key, reverse=True)
@@ -419,6 +461,13 @@ def process_account(username):
 
         selected_items = posts[:POST_LIMIT] + reels[:REEL_LIMIT]
         selected_items.sort(key=sort_key, reverse=True)
+
+        if not selected_items:
+            return preserve_previous_if_needed(
+                username,
+                account_result,
+                f"Tidak ada posting terbaru dalam {RECENT_DAYS} hari terakhir"
+            )
 
         account_result["posts"] = selected_items
 
@@ -430,8 +479,11 @@ def process_account(username):
         )
 
     except Exception as e:
-        account_result["error"] = str(e)[:500]
-        print(f"Error {username}: {account_result['error']}", flush=True)
+        return preserve_previous_if_needed(
+            username,
+            account_result,
+            f"Exception: {str(e)[:300]}"
+        )
 
     return account_result
 
@@ -447,7 +499,7 @@ def main():
     index_data = {
         "generated_at": now_jakarta_iso(),
         "recent_days": RECENT_DAYS,
-        "filter_mode": "last_48_hours",
+        "filter_mode": f"last_{RECENT_DAYS}_days",
         "post_limit": POST_LIMIT,
         "reel_limit": REEL_LIMIT,
         "fetch_limit": FETCH_LIMIT,
