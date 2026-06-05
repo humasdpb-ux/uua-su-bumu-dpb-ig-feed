@@ -1,7 +1,7 @@
 import json
 import os
 import subprocess
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 
 
@@ -279,9 +279,40 @@ def extract_date(data):
 
 
 def parse_date(date_text):
+    """Parse waktu Instagram dan selalu kembalikan datetime Asia/Jakarta.
+
+    Catatan penting:
+    - gallery-dl/Instagram sering mengeluarkan waktu dalam UTC, misalnya
+      2026-06-05 02:31:00 atau 2026-06-05T02:31:00+00:00.
+    - Sebelumnya script langsung memberi tz Asia/Jakarta ke angka 02:31,
+      sehingga di website tampil 02:31 WIB. Padahal 02:31 UTC = 09:31 WIB.
+    """
     if not date_text:
         return None
 
+    jakarta_tz = ZoneInfo(TIMEZONE)
+    text = str(date_text).strip()
+
+    # Timestamp UNIX selalu berbasis UTC. Convert langsung ke Asia/Jakarta.
+    try:
+        if text.replace(".", "", 1).isdigit():
+            timestamp = float(text)
+            return datetime.fromtimestamp(timestamp, jakarta_tz)
+    except Exception:
+        pass
+
+    # Handle format ISO dengan timezone: Z, +00:00, +0000, dll.
+    iso_text = text.replace("Z", "+00:00")
+    try:
+        dt = datetime.fromisoformat(iso_text)
+        if dt.tzinfo is None:
+            # Naive datetime dari gallery-dl diasumsikan UTC, bukan WIB.
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt.astimezone(jakarta_tz)
+    except ValueError:
+        pass
+
+    # Fallback untuk format umum tanpa timezone. Anggap UTC lalu convert ke WIB.
     formats = [
         "%Y-%m-%d %H:%M:%S",
         "%Y-%m-%dT%H:%M:%S",
@@ -290,16 +321,20 @@ def parse_date(date_text):
 
     for fmt in formats:
         try:
-            dt = datetime.strptime(str(date_text)[:19], fmt)
-            return dt.replace(tzinfo=ZoneInfo(TIMEZONE))
+            dt = datetime.strptime(text[:19], fmt)
+            dt = dt.replace(tzinfo=timezone.utc)
+            return dt.astimezone(jakarta_tz)
         except ValueError:
             continue
 
-    try:
-        timestamp = int(float(date_text))
-        return datetime.fromtimestamp(timestamp, ZoneInfo(TIMEZONE))
-    except Exception:
-        return None
+    return None
+
+
+def normalize_date_for_output(date_text):
+    dt = parse_date(date_text)
+    if not dt:
+        return ""
+    return dt.isoformat()
 
 
 def is_recent(date_text):
@@ -318,7 +353,8 @@ def normalize_item(data, username):
     post_url = extract_post_url(data, shortcode)
     image_url = extract_image_url(data)
     caption = extract_caption(data)
-    date = extract_date(data)
+    date_raw = extract_date(data)
+    date = normalize_date_for_output(date_raw)
 
     subcategory = str(data.get("subcategory", "")).lower()
     media_type = str(data.get("type", "")).lower()
@@ -345,6 +381,7 @@ def normalize_item(data, username):
         "caption": caption,
         "caption_short": caption[:180] if caption else "",
         "date": date,
+        "date_raw": date_raw,
         "image_url": image_url,
         "is_video": is_video,
         "is_reel": is_reel,
@@ -366,7 +403,7 @@ def merge_items_by_post(raw_items, username):
             merged[key] = item
             continue
 
-        for field in ["url", "caption", "caption_short", "date", "image_url", "shortcode"]:
+        for field in ["url", "caption", "caption_short", "date", "date_raw", "image_url", "shortcode"]:
             if not merged[key].get(field) and item.get(field):
                 merged[key][field] = item[field]
 
