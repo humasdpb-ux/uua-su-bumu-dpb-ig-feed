@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-05T15:57:30.180081+07:00",
+  "generated_at": "2026-06-05T23:52:36.104701+07:00",
   "recent_days": 7,
   "filter_mode": "last_7_days",
   "post_limit": 1,
@@ -23,7 +23,7 @@
       "username": "klinik.unpad",
       "file": "klinik.unpad.json",
       "post_count": 0,
-      "error": "Tidak ada data terbaca dari Instagram. "
+      "error": "Tidak ada posting terbaru dalam 7 hari terakhir"
     },
     {
       "username": "klinik.unpadsingaperbangsa",
@@ -124,7 +124,7 @@
     {
       "username": "bale_tatanen_unpad",
       "file": "bale_tatanen_unpad.json",
-      "post_count": 1,
+      "post_count": 2,
       "error": null
     },
     {
