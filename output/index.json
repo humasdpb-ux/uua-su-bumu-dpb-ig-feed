@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-06T16:10:08.217114+07:00",
+  "generated_at": "2026-06-06T21:55:49.074688+07:00",
   "recent_days": 7,
   "filter_mode": "last_7_days",
   "post_limit": 1,
@@ -40,7 +40,7 @@
     {
       "username": "apotek.unpad",
       "file": "apotek.unpad.json",
-      "post_count": 2,
+      "post_count": 1,
       "error": null
     },
     {
@@ -172,7 +172,7 @@
     {
       "username": "pip.unpad",
       "file": "pip.unpad.json",
-      "post_count": 1,
+      "post_count": 2,
       "error": null
     },
     {
