@@ -1,6 +1,20 @@
 {
-  "username": "bipaunpad",
-  "generated_at": "2026-06-08T19:57:24.774626+07:00",
-  "posts": [],
-  "error": "Tidak ada data terbaca dari Instagram. "
+    "posts": [
+        {
+            "url": "https://www.instagram.com/reel/DYtzCwBSAVp/",
+            "caption_short": "Dokumentasi Kelas Membaca📚\n\nPada kelas kali ini, pemelajar ditantang untuk menulis kata-kata yang diucapkan oleh teman satu timnya. Setelah itu, merek...",
+            "date": "2026-05-24 04:44:24",
+            "image_url": "https://scontent-ord5-3.cdninstagram.com/o1/v/t2/f2/m86/AQNaM9wEOb3vNX4HGBslidF5DHTrMqtoLOG4E7HeQxwV-LCeu-qyjej97HU2ssxp0ZengZWMw59K2GWcE16V-RkCeYdEFcRANRr4xvw.mp4?_nc_cat=109&_nc_sid=5e9851&_nc_ht=scontent-ord5-3.cdninstagram.com&_nc_ohc=r-2wwj21niEQ7kNvwExP4Sy&efg=eyJ2ZW5jb2RlX3RhZyI6Inhwdl9wcm9ncmVzc2l2ZS5JTlNUQUdSQU0uQ0xJUFMuQzMuNzIwLmRhc2hfYmFzZWxpbmVfMV92MSIsInhwdl9hc3NldF9pZCI6MjIwNzE0NzAyMzQ1NjQ5NCwiYXNzZXRfYWdlX2RheXMiOjE4LCJ2aV91c2VjYXNlX2lkIjoxMDA5OSwiZHVyYXRpb25fcyI6MTQxLCJ1cmxnZW5fc291cmNlIjoid3d3In0%3D&ccb=17-1&vs=35bfed2b09e321c7&_nc_vs=HBksFQIYUmlnX3hwdl9yZWVsc19wZXJtYW5lbnRfc3JfcHJvZC8yNjQxOTY4QzAwNjY2MjVENzQ2ODY3NjYyMzFFRDJCOV92aWRlb19kYXNoaW5pdC5tcDQVAALIARIAFQIYUWlnX3hwdl9wbGFjZW1lbnRfcGVybWFuZW50X3YyL0Q4NDgwQkM3MEZCMjlDRTg0QjQ4MUNBMUQzN0NBMjlCX2F1ZGlvX2Rhc2hpbml0Lm1wNBUCAsgBEgAoABgAGwKIB3VzZV9vaWwBMRJwcm9ncmVzc2l2ZV9yZWNpcGUBMRUAACbc4-bk7tjrBxUCKAJDMywXQGG3dLxqfvoYEmRhc2hfYmFzZWxpbmVfMV92MREAdf4HZeadAQA&_nc_gid=eOVh7feX98XoHv5VjiGzyQ&edm=AL-3X8kEAAAA&_nc_zt=28&_nc_eui2=AeEzTZtxFZ1szMg7-WBROFbSuWxVcUcPDOK5bFVxRw8M4lQ7Ae59_ULUwVBIq1boRQ9DuSks5PHp0In1By1_QPQq&oh=00_Af_W0e_5at4TydRlEHm5YFT4aO2MkYRIN66FNUBxuFhSkQ&oe=6A2C471E",
+            "is_video": true,
+            "is_reel": true
+        },
+        {
+            "url": "https://www.instagram.com/p/DYn5fsfFBWG/",
+            "caption_short": "Kegiatan pengenalan alam Jawa Barat kepada pemelajar BIPA TIAS Pusat Bahasa FIB Unpad menjadi pengalaman berharga untuk mengenal keindahan alam sekali...",
+            "date": "2026-05-22 02:00:00",
+            "image_url": "https://scontent-ord5-3.cdninstagram.com/v/t51.82787-15/703240191_18318521398287372_3282741588999247620_n.jpg?stp=dst-jpg_e35_tt6&_nc_cat=107&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0FST1VTRUxfSVRFTS5iZXN0X2ltYWdlX3VybGdlbi5DMyJ9&_nc_eui2=AeF9tleTAM4pUyfyrTlAplpKfQKE9-du7yh9AoT3527vKDGD-anu6t1XoSi34ouvSWstHJpAzPj2p_FT3ZKU5pwy&_nc_ohc=DTsQ_KyUdgoQ7kNvwFk6ReF&_nc_oc=Ado-vSUnJZGxkng9WiAP3R_l38gHbk77ykTV1q9OOnOZnrKv2GKiR_9Yz2NbemryUag&_nc_zt=23&_nc_ht=scontent-ord5-3.cdninstagram.com&edm=AL-3X8kEAAAA&_nc_gid=eOVh7feX98XoHv5VjiGzyQ&oh=00_Af_UzcccPL0e7i3E-EaZ6cKOojQKigYljk3Wyoy14hDhPw&oe=6A303EC3",
+            "is_video": false,
+            "is_reel": false
+        }
+    ]
 }
