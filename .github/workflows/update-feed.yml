@@ -2,8 +2,8 @@ name: Update IG Feeds Tiap Jam
 
 on:
   schedule:
-    - cron: '0 * * * *' # Berjalan setiap menit ke-0 setiap jam
-  workflow_dispatch: # Memungkinkan Anda menekan tombol "Run" manual
+    - cron: '0 * * * *'
+  workflow_dispatch:
 
 jobs:
   scrape-instagram:
@@ -22,8 +22,7 @@ jobs:
 
       - name: Jalankan Script Scraper
         env:
-          IG_USERNAME: ${{ secrets.IG_USERNAME }}
-          IG_PASSWORD: ${{ secrets.IG_PASSWORD }}
+          IG_SESSIONID: ${{ secrets.IG_SESSIONID }}
         run: python scraper.py
 
       - name: Commit dan Push Hasil JSON Baru
