@@ -4,32 +4,43 @@ import os
 import time
 from datetime import datetime
 
-# Daftar 32 akun
+# Daftar 32 akun dari data CSV Unit Usaha Unpad
 ACCOUNTS = [
     "taxcenterunpad", "lrtf_unpad", "unpadpusatbahasa", "bipaunpad", "biomedik.fkunpad", "pamitran.unpad", "p4kgbfkgunpad", "puspaunpad", "imcarepuspa", "labfmipaunpad", "bale_tatanen_unpad", "labktnt.unpad", "mipacornerunpad", "fikommerce", "diviaunpadtv",
     "rsunpad", "rsgmunpad_official", "klinik.unpad", "klinik.unpadsingaperbangsa", "klinik.unpaddago", "apotek.unpad", "rshunpad", "labsentral.unpad", "bigunpad",
     "mahatmasagi.unpad", "interedu.mmunpad", "mmu.eventtourorganizer", "utcdagohotelbandung", "asrama.balewilasa", "mahatmacoffeebymmu", "pip.unpad", "unpad.edex"
 ]
 
-L = instaloader.Instaloader(download_pictures=False, download_video_thumbnails=False, download_videos=False, download_comments=False, save_metadata=False)
+# Inisialisasi Instaloader
+L = instaloader.Instaloader(
+    download_pictures=False, 
+    download_video_thumbnails=False, 
+    download_videos=False, 
+    download_comments=False, 
+    save_metadata=False,
+    max_connection_attempts=1 # Mempercepat skip jika terjadi error/blokir
+)
 
-# --- BAGIAN TAMBAHAN UNTUK LOGIN ---
-ig_user = os.environ.get("IG_USERNAME")
-ig_pass = os.environ.get("IG_PASSWORD")
+# --- BAGIAN LOGIN VIA SESSION ID ---
+session_id = os.environ.get("IG_SESSIONID")
 
-if ig_user and ig_pass:
+if session_id:
     try:
-        L.login(ig_user, ig_pass)
-        print("Berhasil login dengan akun:", ig_user)
+        # Memasukkan cookie sessionid langsung ke sesi Instaloader
+        L.context._session.cookies.set("sessionid", session_id, domain=".instagram.com")
+        print("Berhasil memasukkan kredensial via Session ID")
     except Exception as e:
-        print("Gagal login:", e)
+        print("Gagal set Session ID:", e)
+else:
+    print("Peringatan: IG_SESSIONID tidak ditemukan di GitHub Secrets!")
 # -----------------------------------
 
+# Pastikan folder output/ ada
 os.makedirs("output", exist_ok=True)
 
 for username in ACCOUNTS:
     try:
-        print(f"Mengambil data dari: {username}")
+        print(f"\nMengambil data dari: {username}")
         profile = instaloader.Profile.from_username(L.context, username)
         
         posts_data = []
@@ -48,12 +59,13 @@ for username in ACCOUNTS:
             })
             count += 1
             
+        # Simpan ke format JSON di folder output/
         output_data = {"posts": posts_data}
         with open(f"output/{username}.json", "w", encoding="utf-8") as f:
             json.dump(output_data, f, ensure_ascii=False, indent=4)
             
-        # Jeda diperlama sedikit (15 detik) untuk menghindari limit saat posisi login
+        print(f"-> Sukses! Jeda 15 detik untuk menghindari blokir...")
         time.sleep(15)
         
     except Exception as e:
-        print(f"Error pada {username}: {e}")
+        print(f"-> Error pada {username}: {e}")
