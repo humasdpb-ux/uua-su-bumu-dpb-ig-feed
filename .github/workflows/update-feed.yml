@@ -2,7 +2,7 @@ name: Update IG Feeds Tiap Jam via API
 
 on:
   schedule:
-    - cron: '0 * * * *' # Menjalankan otomatis setiap jam
+    - cron: '17 * * * *' # Menjalankan otomatis setiap jam
   workflow_dispatch:     # Tombol manual untuk testing
 
 jobs:
